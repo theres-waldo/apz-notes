@@ -4,6 +4,28 @@ This is a place I write down notes about APZ. Mostly for myself, but published i
 
 This is not documentation. Anything here may well be out of date a minute after I've written it.
 
+## 2019-09-30
+
+**APZ has two different codepaths where it computes a transform for hit-testing purposes**
+
+Three, actually, if you count WebRender:
+
+1. During APZ hit testing, to decide which hit testing tree node to target
+   * For non-WebRender, this walks the hit testing tree and unapplies each node's `APZCTreeManager::ComputeTransformForNode()`.
+   * For WebRender, this presumably does something similar inside WebRender.
+1. When converting the screen coordinates into APZC coordinates, it uses `GetScreenToApzcTransform()`. (These then get converted further into Gecko coordinates using `GetApzcToGeckoTransform()`.)
+
+In principle, `GetScreenToApzcTranform()` should return the same transform as multiplying together the `ComputeTransformForNode()` for every node from the APZC to the root, and implementing it that way should have no effect on correctness. We do not implement it that way, in part for historical reasons (`GetScreenToApzcTranform()` predates `ComputeTransformForNode()`) and in part for performance reasons (`GetScreenToApzcTranform()` uses the "ancestor transforms" which are segments of the multiplication that only change during hit testing tree updates and are pre-computed and cached during such updates).
+
+We should be careful to make sure these functions remain in sync. Already today, there are some subtle differences:
+
+* The ancestor transforms used in `GetScreenToApzcTranform()` have special handling for perspective transforms, which `ComputeTransformForNode()` lacks.
+* `ComputeTransformForNode()` handles async transforms on scrollbar layers.
+
+The second one is fine (a scrollbar layer is never on a path from the APZC to the root), but the first is a subtle bug that may have a user-noticeable effect on some pages with perspective transforms.
+
+There may be existing inconsistencies with the WebRender codepath as well, which I haven't investigated.
+
 ## 2019-09-16
 
 **Under what circumstances does `APZCTreeManager::ReceiveInputEvent()` return its various return values?**
