@@ -4,6 +4,40 @@ This is a place I write down notes about APZ. Mostly for myself, but published i
 
 This is not documentation. Anything here may well be out of date a minute after I've written it.
 
+## 2020-01-17
+
+** APZ Architecture Topics **
+
+This is a rough outline of the topics I cover in my APZ architecture peering sessions when new engineers join the Graphics team.
+
+* the main processes of relevance to APZ (parent, compositor/GPU, content)
+* the rendering pipeline in the content process
+  * differences between WebRender and non-WebRender
+  * mention that there is an instance of this pipeline in the parent process as well for browser chrome
+  * mention that this happens on the main thread and therefore can be blocked on JS
+* the rendering pipeline in the compositor process
+  * differences between WebRender and non-WebRender
+  * the APZ component in that process
+* transactions from the content process to the compositor process
+* input events arriving at the parent process
+  * sending them to the compositor process to undergo compositor hit testing
+  * dispatching them to the correct content process (or to the content in the parent process)
+    * implied requirement on compositor hit testing: identify the correct content process to handle the event
+* display-list based hit testing in content
+* the APZ scrolling and zooming fast-path
+  * implied requirement on compositor hit testing: identify the correct scrollable element to scroll
+* displayports
+  * checkerboarding
+  * displayport heuristics
+* the dispatch-to-content mechanism, and the 3 problems it solves
+  * inactive scrollframes
+  * irregular shapes
+  * preventDefault()
+    * passive event listeners
+    * content response timeout, correctness vs. responsiveness tradeoffs
+* scroll offset synchronization
+* visual vs. layout viewports, mobile viewport sizing
+
 ## 2019-09-30
 
 **APZ has two different codepaths where it computes a transform for hit-testing purposes**
