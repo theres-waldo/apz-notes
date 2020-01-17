@@ -6,7 +6,7 @@ This is not documentation. Anything here may well be out of date a minute after 
 
 ## 2020-01-17
 
-** APZ Architecture Topics **
+**APZ Architecture Topics**
 
 This is a rough outline of the topics I cover in my APZ architecture peering sessions when new engineers join the Graphics team.
 
