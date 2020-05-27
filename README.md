@@ -4,6 +4,27 @@ This is a place I write down notes about APZ. Mostly for myself, but published i
 
 This is not documentation. Anything here may well be out of date a minute after I've written it.
 
+## 2020-05-27
+
+**Tips for reproducing an Android test failure on desktop**
+
+I often have to debug Android-only test failures caused by changes to APZ / scrolling / layout code. The code I'm changing is typically cross-platform, and therefore there should in principle be a way to reproduce the test failure on desktop. I try to do so whenever possible, as it's much easier to debug a failure on desktop than it is Android (for two main reasons: (1) the edit / compile / run cycle is much quicker on desktop than Android (often 1 minute vs. 5 minutes), and (2) I can use [RR](https://rr-project.org/) on desktop).
+
+Unfortunately, even for cross-platform code there are many differences between the desktop and Android environments that can cause a failure to only manifest on Android. Here are some that I've identified, and where appropriate, how I work around them:
+
+* Different default prefs on Android. For APZ work, this often includes `apz.allow_zooming=true` and `dom.meta-viewport.enabled=true`.
+  * This is easy enough to work around by adding some `--setpref <pref>=<value>` arguments to the desktop test invocation.
+* Different screen size on Android.
+  * This can be worked around on Linux using e.g. `xvfb-run -s "-screen 0 800x1000x24" ./mach mochitest <testpath>` to get the test to run on a virtual screen with size 800x1000.
+* Different DPI. This is only relevant for a few tests like the [event retargeting one](https://searchfox.org/mozilla-central/rev/bc3600def806859c31b2c7ac06e3d69271052a89/layout/base/tests/test_event_target_radius.html).
+  * I don't know how to control this "at the source", but it can be hacked out by modifying [`nsDeviceContext::AppUnitsPerPhysicalInch()`](https://searchfox.org/mozilla-central/rev/bc3600def806859c31b2c7ac06e3d69271052a89/gfx/src/nsDeviceContext.h#109).
+* The presence of browser chrome on desktop, which introduces an offset into coordinate calculations that's not present on Android.
+  * I haven't found a way to work around this.  
+* Android-specific codepaths. These can occur in both [test code](https://searchfox.org/mozilla-central/rev/bc3600def806859c31b2c7ac06e3d69271052a89/layout/base/tests/test_event_target_radius.html#113) and [platform code](https://searchfox.org/mozilla-central/rev/bc3600def806859c31b2c7ac06e3d69271052a89/gfx/layers/apz/src/AsyncPanZoomController.cpp#4542).
+  * This can sometimes be worked around by modifying the checks locally.
+
+There are likely many other environment differences in addition to the ones listed here.
+
 ## 2020-01-17
 
 **APZ Architecture Topics**
