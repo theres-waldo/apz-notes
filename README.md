@@ -92,6 +92,7 @@ There may be existing inconsistencies with the WebRender codepath as well, which
   * for touch events:
     * we receive a non-touchstart touch event when no touch blocks are active (this shouldn't happen)
     * the event's target APZC cannot consume pointer events (due to e.g. `touch-action`)
+      * **important update: this also happens if the target APZC simply doesn't have room to scroll in the touch event's direction (e.g. if it's a non-scrollable page)**
   * for pan gesture events:
     * if the pan gesture is horizontal, didn't cause scrolling, and may trigger a swipe gesture
     * the event (considering its modifiers) is configured (via default or modified prefs) to perform an action other than scroll, horizontalized scroll, or pinch-zoom
